@@ -12,7 +12,7 @@ class Student {
 /**
  * Create list data 
  */
-let arrStudent = [];
+var arrStudent;
 let dataHtmlOrigin;
 let isNew ;  
 /**
@@ -23,10 +23,16 @@ let isNew ;
 window.onload = function onInit() {
     var no_data = document.getElementById("data");
     dataHtmlOrigin = document.getElementById("data-clone");
-    no_data.innerHTML = "<tr class='text-center'><td style='border-bottom: 1px solid #dee2e6;' colspan='5'>No data</td></tr>";
-    addRowHandlers();
     openUserManual();
     isNew = true;
+    var storedNames = JSON.parse(localStorage.getItem("students"));
+    if (storedNames && storedNames.length  > 0 ) {
+        arrStudent = storedNames;
+        reloadTable();
+    } else {
+        arrStudent = [];
+        no_data.innerHTML = "<tr class='text-center'><td style='border-bottom: 1px solid #dee2e6;' colspan='5'>No data</td></tr>";
+    }
 }
 
  function submitForm() {
@@ -48,6 +54,7 @@ window.onload = function onInit() {
                 data.email = objStu.email;
                 isNew = true;
                 reloadTable();
+                reloadLocalStore();
                 return;
             } else {
                 arrStudent.push(objStu);
@@ -76,13 +83,14 @@ window.onload = function onInit() {
                 }
                 addRowHandlers();
                 // reloadTable();
+                reloadLocalStore();
             }
            
         }
     }
  }
 
- function validateDataBlank(data) {
+function validateDataBlank(data) {
     if (data.id == '' || data.name == '' || data.email == '') {
         alert("Pls Input");
         return 1;
@@ -144,13 +152,14 @@ var createClickHandler = function(row) {
         };
     } else {
         return function() { 
-            var r = confirm("Do you want delete Record ? ");
+            var cell_0 = row.getElementsByTagName("td")[0];
+            var id = cell_0.innerHTML;
+            var r = confirm("Do you want delete Record "  + id + "?");
             if (r == true) {
-                var cell_0 = row.getElementsByTagName("td")[0];
-                var id = cell_0.innerHTML;
                 if (arrStudent && arrStudent.length > 0) {
                     arrStudent = arrStudent.filter(item => item.id !== id);
                     reloadTable();
+                    reloadLocalStore();
                     console.log(arrStudent);
                 }
             }
@@ -182,12 +191,11 @@ function reloadTable() {
             email.textContent = item.email;
 
             no_data.appendChild(tempHtml);
-
-            addRowHandlers();
         })
     } else {
         no_data.innerHTML = "<tr class='text-center'><td style='border-bottom: 1px solid #dee2e6;' colspan='5'>No data</td></tr>";
     }
+    addRowHandlers();
 }
 
 
@@ -197,6 +205,11 @@ function openUserManual() {
     setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
 }
 
+
+function reloadLocalStore() {
+    localStorage.clear();
+    localStorage.setItem("students", JSON.stringify(arrStudent));
+}
 
  /**
   * End Code
